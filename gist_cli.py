@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import argparse
-from ConfigParser import ConfigParser
+import ConfigParser
 import os.path
 import urllib2
 import json
@@ -12,6 +12,7 @@ def main():
     parser.add_argument( 'infile_list', nargs = '*', type = argparse.FileType( 'r' ))
     parser.add_argument( '--description', '-d', default = '' )
     parser.add_argument( '--private', '-p', action = 'store_true', default = False )
+    parser.add_argument( '--anonymous', '-a', action = 'store_true', default = False )
     arguments = parser.parse_args()
 
 
@@ -26,16 +27,18 @@ def main():
 
     request = urllib2.Request( '%s/gists' % (uri) )
 
-    try:
-        gitconfig = ConfigParser()
-        gitconfig.readfp( open( os.path.expanduser( '~/.gitconfig' ) ) )
-        username = gitconfig.get( 'github', 'user' )
-        password = gitconfig.get( 'github', 'password' )
+    if not arguments.anonymous:
+        gitconfig = ConfigParser.ConfigParser()
+        try:
+            gitconfig.readfp( open( os.path.expanduser( '~/.gitconfig' ) ) )
+            username = gitconfig.get( 'github', 'user' )
+            password = gitconfig.get( 'github', 'password' )
+        except ConfigParser.Error as e:
+            sys.stderr.write('Invalid auth config: %s\n' % e.message)
+            sys.exit(1)
         raw = '%s:%s' % (username, password)
         auth = 'Basic %s' % base64.b64encode(raw).strip()
         request.add_header('authorization', auth)
-    except: #Empty Excepts kill puppies
-        pass
 
     request.add_data(json.dumps( {
         'description': arguments.description,
