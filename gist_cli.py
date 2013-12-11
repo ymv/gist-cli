@@ -13,6 +13,7 @@ def main():
     parser.add_argument( '--description', '-d', default = '' )
     parser.add_argument( '--private', '-p', action = 'store_true', default = False )
     parser.add_argument( '--anonymous', '-a', action = 'store_true', default = False )
+    parser.add_argument( '--stdin-file-name', default='stdin')
     arguments = parser.parse_args()
 
 
@@ -21,7 +22,7 @@ def main():
         for infile in arguments.infile_list:
            files[infile.name] = {'content': infile.read()}
     else:
-        files = {'stdin': {'content': sys.stdin.read()}}
+        files = {arguments.stdin_file_name: {'content': sys.stdin.read()}}
 
     uri = 'https://api.github.com'
 
