@@ -7,6 +7,10 @@ import json
 import sys
 import base64
 
+def die(message, *args):
+    sys.stderr.write(message % args + '\n')
+    sys.exit(1)
+
 def main():
     parser = argparse.ArgumentParser( description = 'Create a github gist from a file, or from stdin' )
     parser.add_argument( 'infile_list', nargs = '*', type = argparse.FileType( 'r' ))
@@ -36,8 +40,7 @@ def main():
             username = gitconfig.get( 'github', 'user' )
             password = gitconfig.get( 'github', 'password' )
         except ConfigParser.Error as e:
-            sys.stderr.write('Invalid auth config: %s\n' % e.message)
-            sys.exit(1)
+            die('Invalid auth config: %s', e.message)
         raw = '%s:%s' % (username, password)
         auth = 'Basic %s' % base64.b64encode(raw).strip()
         request.add_header('authorization', auth)
@@ -47,8 +50,13 @@ def main():
         'public': not arguments.private,
         'files': files,
     }))
+    try:
+        response = urllib2.urlopen(request)
+    except urllib2.HTTPError as e:
+        if e.code == 401:
+            die('Invalid username/password')
+        die('API HTTP error: %d %s', e.code, e.reason)
 
-    response = urllib2.urlopen(request)
     json_response = json.loads(response.read())
     if arguments.verbose:
         json.dump(json_response, sys.stdout, sort_keys=True, indent=2)
