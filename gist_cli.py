@@ -14,6 +14,7 @@ def main():
     parser.add_argument( '--private', '-p', action = 'store_true', default = False )
     parser.add_argument( '--anonymous', '-a', action = 'store_true', default = False )
     parser.add_argument( '--stdin-file-name', default='stdin')
+    parser.add_argument( '--verbose', '-v', action = 'store_true', default = False )
     arguments = parser.parse_args()
 
 
@@ -49,7 +50,10 @@ def main():
 
     response = urllib2.urlopen(request)
     json_response = json.loads(response.read())
-    print json_response['html_url']
+    if arguments.verbose:
+        json.dump(json_response, sys.stdout, sort_keys=True, indent=2)
+    else:
+        print json_response['html_url']
 
 if __name__ == '__main__':
   main()
