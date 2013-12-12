@@ -21,17 +21,14 @@ def main():
     parser.add_argument( '--verbose', '-v', action = 'store_true', default = False )
     arguments = parser.parse_args()
 
-
     if len(arguments.infile_list) > 0:
         files = {}
         for infile in arguments.infile_list:
-           files[infile.name] = {'content': infile.read()}
+            files[infile.name] = {'content': infile.read()}
     else:
         files = {arguments.stdin_file_name: {'content': sys.stdin.read()}}
 
-    uri = 'https://api.github.com'
-
-    request = urllib2.Request( '%s/gists' % (uri) )
+    request = urllib2.Request( 'https://api.github.com/gists' )
 
     if not arguments.anonymous:
         gitconfig = ConfigParser.ConfigParser()
@@ -50,6 +47,7 @@ def main():
         'public': not arguments.private,
         'files': files,
     }))
+
     try:
         response = urllib2.urlopen(request)
     except urllib2.HTTPError as e:
