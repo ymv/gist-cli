@@ -24,7 +24,10 @@ def main():
     if len(arguments.infile_list) > 0:
         files = {}
         for infile in arguments.infile_list:
-            files[infile.name] = {'content': infile.read()}
+            name = os.path.basename(infile.name)
+            if name in files:
+                die('Duplicate file name after path striping: %s', infile.name)
+            files[name] = {'content': infile.read()}
     else:
         files = {arguments.stdin_file_name: {'content': sys.stdin.read()}}
 
